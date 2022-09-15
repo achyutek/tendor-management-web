@@ -1,0 +1,5 @@
+export const filterConstants ={
+    FILTER_ACTION: 'FILTER_ACTION',
+    RESET_FILTER_ACTION:'RESET_FILTER_ACTION',
+
+}
