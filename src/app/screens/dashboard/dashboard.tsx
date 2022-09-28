@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Layout, Card, Col, Row, Avatar, PageHeader, Select } from "antd";
+import {Card, Col, Row, Avatar, Select } from "antd";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -28,21 +28,12 @@ import { NavLink } from "react-router-dom";
 import { notifications } from "../../_helpers/notifications";
 import Moment from "moment";
 import { connect } from "react-redux";
-import { values } from "lodash";
 import {
-  filterAction,
   resetFilterAction,
 } from "../../_redux/_actions/filter.action";
 const { Meta } = Card;
 const { Option } = Select;
 
-// Pie Chart
-const data = [
-  { name: "Group A", value: 400 },
-  { name: "Group B", value: 300 },
-  { name: "Group C", value: 300 },
-  { name: "Group D", value: 200 },
-];
 const COLORS = [
   "#0088FE",
   "#00C49F",
@@ -254,8 +245,11 @@ export class Dashboard extends Component<any, any> {
         this.setState({
           RfpDomainList: this.getFields(response, "name"),
         });
+      }, (error) => {
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
       })
-      .catch(notifications.openErrorNotification);
     rfpService
       .getRfpMetricsByAttribute(AttributeType.ACTION, this.state.timeInterval)
       .then((response) => {
@@ -263,7 +257,11 @@ export class Dashboard extends Component<any, any> {
           RfpAction: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getRfpMetricsByAttribute(AttributeType.DUE, this.state.timeInterval)
@@ -272,7 +270,11 @@ export class Dashboard extends Component<any, any> {
           RfpDue: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
     rfpService
       .getRfpMetricsByAttribute(AttributeType.STATUS, this.state.timeInterval)
       .then((response) => {
@@ -280,7 +282,11 @@ export class Dashboard extends Component<any, any> {
           RfpStatus: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getRfpMetricsByAttribute(AttributeType.TYPE, this.state.timeInterval)
@@ -289,7 +295,11 @@ export class Dashboard extends Component<any, any> {
           RfpType: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getRfpMetricsByAttribute(AttributeType.DOMAIN, this.state.timeInterval)
@@ -298,7 +308,11 @@ export class Dashboard extends Component<any, any> {
           RfpDomain: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getRfpTotal(this.state.timeInterval)
@@ -307,7 +321,11 @@ export class Dashboard extends Component<any, any> {
           RfpTotal: response[0].count,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   componentDidMount = async () => {
@@ -323,7 +341,6 @@ export class Dashboard extends Component<any, any> {
     this.loadWeeklyReport();
     this.getRegion();
 
-    //this.getlastWonProposal();
     rfpService
       .getRfpTask()
       .then((response) => {
@@ -331,7 +348,11 @@ export class Dashboard extends Component<any, any> {
           RfpTask: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     await rfpService
       .getRfpTaskOpen()
@@ -340,15 +361,24 @@ export class Dashboard extends Component<any, any> {
           RfpTaskOpen: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   getRegion = async () => {
     this.setState({
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
-        .then()
-        .catch(notifications.openErrorNotification),
+        .then((response) =>{
+
+        },(error)=> {
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -393,7 +423,11 @@ export class Dashboard extends Component<any, any> {
       analytical: await rfpService
         .getAnalytical(this.month, this.year)
         .then()
-        .catch(),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -403,7 +437,11 @@ export class Dashboard extends Component<any, any> {
       analyticalweekly: await rfpService
         .getWeekReport(this.state.endweekly)
         .then()
-        .catch(),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -425,7 +463,11 @@ export class Dashboard extends Component<any, any> {
           wonProposal: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   handlRegionChange = async (region: any) => {
@@ -434,7 +476,6 @@ export class Dashboard extends Component<any, any> {
 
     if (response != "") {
       let domainName = this.domainValue;
-      // this.domainValue = domainName;
       this.setState({
         RfpDomainList: this.getFields(response, "name"),
       });
@@ -462,7 +503,6 @@ export class Dashboard extends Component<any, any> {
     this.domainValue = "";
   };
 
-  areaClick = (data: any) => {};
   render() {
     const {
       RfpStatus,
@@ -473,10 +513,7 @@ export class Dashboard extends Component<any, any> {
       RfpTask,
       RfpTaskOpen,
       RfpTotal,
-      analytical,
-      analyticalweekly,
     } = this.state;
-    const { statusData } = this.props;
     return (
       <>
         <div className="site-page-header-ghost-wrapper">
@@ -763,7 +800,6 @@ export class Dashboard extends Component<any, any> {
                               fill="#8884d8"
                               paddingAngle={5}
                               dataKey="count"
-                              // We Will use this after some changes
                               onClick={(data: any, index: any) => {
                                 history.push({
                                   pathname: "/proposals",
@@ -793,7 +829,6 @@ export class Dashboard extends Component<any, any> {
                               className="legend-01"
                               layout="vertical"
                               wrapperStyle={style}
-                              // We Will use this after some changes
                               onClick={this.selectLeblePie}
                             />
                           </PieChart>
@@ -839,7 +874,6 @@ export class Dashboard extends Component<any, any> {
                             dataKey="count"
                             stackId="a"
                             fill="#8884d8"
-                            // We Will use this after some changes
                             onClick={(data: any, index: any) => {
                               history.push({
                                 pathname: "/proposals",
@@ -957,105 +991,12 @@ export class Dashboard extends Component<any, any> {
                       </div>
                     </Card>
                   </Col>
-
-                  {/* <Col
-                    xs={{ span: 24 }}
-                    sm={{ span: 24 }}
-                    md={{ span: 24 }}
-                    lg={{ span: 8 }}
-                    className="dashboard-col mt"
-                  >
-                    <Card
-                      title="Monthly Progress Report"
-                      extra={[]}
-                      bordered
-                      hoverable
-                      className="default-height"
-                    >
-                      <ResponsiveContainer className="graph">
-                        <BarChart
-                          data={analytical}
-                          margin={{
-                            top: 5,
-                            right: 0,
-                            left: -30,
-                            bottom: 5,
-                          }}
-                          barSize={20}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar
-                            dataKey="count"
-                            stackId="a"
-                            fill="#8884d8"
-                            onClick={(data: any, index: any) => {
-                              history.push({
-                                pathname: "/proposals",
-                                search: "?type=" + data.name,
-                              });
-                            }}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </Card>
-                  </Col> */}
-
-                  {/* <Col
-                    xs={{ span: 24 }}
-                    sm={{ span: 24 }}
-                    md={{ span: 24 }}
-                    lg={{ span: 8 }}
-                    className="dashboard-col mt"
-                  >
-                    <Card
-                      title="Weekly Progress Report"
-                      extra={[]}
-                      bordered
-                      hoverable
-                      className="default-height"
-                    >
-                      <ResponsiveContainer className="graph">
-                        <BarChart
-                          data={analyticalweekly}
-                          margin={{
-                            top: 5,
-                            right: 0,
-                            left: -30,
-                            bottom: 5,
-                          }}
-                          barSize={20}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar
-                            dataKey="count"
-                            stackId="a"
-                            fill="#8884d8"
-                            onClick={(data: any, index: any) => {
-                              history.push({
-                                pathname: "/proposals",
-                                search: "?type=" + data.name,
-                              });
-                            }}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </Card>
-                  </Col> */}
                 </Row>
               </div>
             </Col>
           </Row>
         </div>
         <br></br>
-
         <style>
           {
             "\
@@ -1083,4 +1024,3 @@ const actionCreators = {
 };
 
 export default connect(mapState, actionCreators)(Dashboard);
-// export default Dashboard;

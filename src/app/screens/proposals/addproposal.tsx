@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import "antd/dist/antd.css";
 import {
   Steps,
-  message,
   Button,
   Row,
   Col,
@@ -13,31 +12,21 @@ import {
   DatePicker,
   InputNumber,
   Spin,
-  notification,
 } from "antd";
 import {
   RightOutlined,
   LeftOutlined,
-  MergeCellsOutlined,
-  MinusOutlined,
-  PlusOutlined,
 } from "@ant-design/icons";
-import FroalaEditorComponent from "react-froala-wysiwyg";
 import InputMask from "react-input-mask";
 import { connect } from "react-redux";
 import { proposalsAction } from "../../_redux/_actions";
 import { rfpService } from "../../services/rfp-service";
 import { AttributeType } from "../../_redux/_constants";
-import CountriesComponent from "../../component/CountriesComponent";
 import moment from "moment";
-import { assignWith, merge } from "lodash";
-import { request } from "http";
 import trash from "../../../assets/images/trash.png";
 import addButton from "../../../assets/images/addButton.png";
-import { Entity, ProposalRequest } from "../../_models/proposal-request.model";
-import { Comment } from "../../_models/comment.model";
+import { ProposalRequest } from "../../_models/proposal-request.model";
 import { Table1 } from "../../component/table";
-import { userService } from "../../services/user-service";
 import { notifications } from "../../_helpers/notifications";
 import { User } from "../../_globals/components";
 import { MessageProp } from "../../_globals/constants/message.constants";
@@ -52,8 +41,8 @@ import "tinymce/plugins/table";
 import "tinymce/skins/ui/oxide/skin.min.css";
 import "tinymce/skins/ui/oxide/content.min.css";
 import "tinymce/skins/content/default/content.min.css";
+import JoditEditor from "jodit-react";
 const Option = Select.Option;
-const { TextArea } = Input;
 const Step = Steps.Step;
 const qs = require("query-string");
 const columnsComment = [
@@ -145,15 +134,16 @@ export class AddProposal extends Component<any, any> {
     };
     this.handledomainChange = this.handledomainChange.bind(this);
   }
-  next = (request: any) => { };
+  
   prev() {
     const current = this.state.current - 1;
-
     this.setState({ current });
   }
+
   direct = (current: Number) => {
     this.setState({ current });
   };
+
   toggle = () => {
     this.setState({
       keyboard: !this.state.keyboard,
@@ -161,14 +151,22 @@ export class AddProposal extends Component<any, any> {
   };
 
   handlRegionChangeEdit = async (region: any) => {
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     this.setState({
       domain: response,
     });
   };
 
   handlRegionChange = async (region: any) => {
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     if (response != "") {
       let domain = response[0].name;
       this.setRegionAndDomain(domain);
@@ -187,7 +185,11 @@ export class AddProposal extends Component<any, any> {
     let response = await rfpService
       .getSubDomains(domain)
       .then()
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
     if (response != "") {
       let subDomain = response[0].name;
       this.setDomainAndSubDomain(subDomain);
@@ -236,7 +238,7 @@ export class AddProposal extends Component<any, any> {
     this.setState({ loading: false });
   }
 
-  componentDidCatch(error: any, info: any) {
+  componentDidCatch(error: any) {
     notifications.errorMessage(error);
   }
   getDocument = async () => {
@@ -248,7 +250,11 @@ export class AddProposal extends Component<any, any> {
           proposalsDocumentData: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   getProposalById = async () => {
@@ -258,7 +264,11 @@ export class AddProposal extends Component<any, any> {
         proposalsEditData: await rfpService
           .getProposalRequest(id)
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
       },
       async () => {
         await this.editProposal();
@@ -274,7 +284,11 @@ export class AddProposal extends Component<any, any> {
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -284,7 +298,11 @@ export class AddProposal extends Component<any, any> {
       countries: await rfpService
         .getRfpProposalsByCountry()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -294,7 +312,11 @@ export class AddProposal extends Component<any, any> {
       countriesList: await rfpService
       .getCountry()
       .then()
-      .catch(notifications.openErrorNotification),
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      }),
       loading: false,
     });
   }
@@ -304,7 +326,11 @@ export class AddProposal extends Component<any, any> {
       statesList: await rfpService
       .getStates(country)
       .then()
-      .catch(notifications.openErrorNotification),
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      }),
       loading: false,
     })
     this.countyName = country;
@@ -315,7 +341,11 @@ export class AddProposal extends Component<any, any> {
       citiesList: await rfpService
       .getCities(this.countyName,state)
       .then()
-      .catch(notifications.openErrorNotification),
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      }),
       loading: false,
     })
     this.stateName = state;
@@ -326,7 +356,11 @@ export class AddProposal extends Component<any, any> {
       zipsList: await rfpService
       .getZipCodes(this.countyName,this.stateName,city)
       .then()
-      .catch(notifications.openErrorNotification),
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      }),
       loading: false
     })
   }
@@ -336,7 +370,11 @@ export class AddProposal extends Component<any, any> {
       submissionData: await rfpService
         .getRfpByAttribute(AttributeType.SUBMISSION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -346,7 +384,11 @@ export class AddProposal extends Component<any, any> {
       contractData: await rfpService
         .getRfpByAttribute(AttributeType.CONTRACT)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -519,9 +561,11 @@ export class AddProposal extends Component<any, any> {
         });
       })
       .catch((error) => {
+        if(error !== "Forbidden"){
         notifications.openErrorNotification(error);
         this.updateLoading(false);
         this.cancel();
+        }
       });
   }
 
@@ -555,7 +599,11 @@ export class AddProposal extends Component<any, any> {
           search: "?id=" + response.id,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   }
   updateLoading = async (bol: boolean) => {
     await this.setState({ loading: bol });
@@ -756,7 +804,7 @@ export class AddProposal extends Component<any, any> {
                                 rules={[{ required: true }]}
                               >
                                 <Select
-                                  value={request.source}
+                                  value={request.source} showSearch
                                 >
                                   {this.props.rfpBySourceData.map(
                                     (data: any) => {
@@ -906,7 +954,6 @@ export class AddProposal extends Component<any, any> {
                                 label={<span> Agency Contact Number</span>}
                                 name={["request", "agency", "contactNo"]}
                               >
-                                {/* <Input placeholder="Enter Agency Contact Number" /> */}
                                 <InputMask mask="(999) 999-9999">
                                   {(inputProps: any) => (
                                     <Input
@@ -964,6 +1011,7 @@ export class AddProposal extends Component<any, any> {
                                 ]}
                               >
                                 <Select
+                                 showSearch
                                  value={request.agency.address.country}
                                  onChange={this.loadStates}
                                 >
@@ -985,6 +1033,7 @@ export class AddProposal extends Component<any, any> {
                                 name={["request", "agency", "address", "state"]}
                               >
                                 <Select
+                                showSearch
                                  value={request.agency.address.state}
                                  >
                                    {this.state.statesList
@@ -1303,10 +1352,8 @@ export class AddProposal extends Component<any, any> {
                                       >
                                         <img src={trash} />
                                       </Button>
-                                   
                                     </Col>
                                   </Row>
-                                 
                                 </div>
                               ))}
                             </>
@@ -1315,7 +1362,9 @@ export class AddProposal extends Component<any, any> {
                         <Row hidden={this.state.hidden1}>
                           <Col className="gutter-row" span={24}>
                             <Form.Item label="Comment" name={["text"]}>
-                              <TextArea rows={4} />
+                            <JoditEditor
+                              value={this.state.comment.text}
+                            />
                             </Form.Item>
                           </Col>
                         </Row>
@@ -1342,7 +1391,9 @@ export class AddProposal extends Component<any, any> {
                               className="bordernone"
                             ></PageHeader>
                             <Form.Item label="Comment" name={["text"]}>
-                              <TextArea rows={4} />
+                            <JoditEditor
+                              value={this.state.comment.text}
+                            />
                             </Form.Item>
                           </Col>
                         </Row>

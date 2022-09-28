@@ -5,9 +5,7 @@ import {
   Row,
   Col,
   PageHeader,
-  Tabs,
   Descriptions,
-  Table,
   Form,
   Input,
   Tooltip,
@@ -18,7 +16,6 @@ import { Link } from "react-router-dom";
 import { Table1 } from "../../../component/table";
 import {
   FormOutlined,
-  FileProtectOutlined,
   DoubleLeftOutlined,
   PlusCircleOutlined,
   UploadOutlined,
@@ -128,7 +125,11 @@ export class DetialsCompetitive extends Component<any, any> {
           competitiveData: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getResponseContentByProposal(id)
@@ -137,7 +138,11 @@ export class DetialsCompetitive extends Component<any, any> {
           proposalsResponseData: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
 
     rfpService
       .getDocumentsByRFP(id)
@@ -146,7 +151,11 @@ export class DetialsCompetitive extends Component<any, any> {
           competitiveDocumentData: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   }
 
   handleSelect = (RwoId: any) => {
@@ -259,7 +268,7 @@ export class DetialsCompetitive extends Component<any, any> {
           ref={this.documentsFormRef}
           onFinish={this.onFinishAddDco}
           validateMessages={validateMessages}
-          scrollToFirstError
+          scrollToFirstError  
         >
           <Form.List name="document">
             {(fields, { add, remove }) => (
@@ -276,7 +285,6 @@ export class DetialsCompetitive extends Component<any, any> {
                             {...field}
                             label="Type"
                             name={[field.name, "type"]}
-                            // fieldKey={[field.fieldKey, "type"]}
                             rules={[{ required: true }]}
                           >
                             <Select value={field.name}>
@@ -292,7 +300,6 @@ export class DetialsCompetitive extends Component<any, any> {
                             {...field}
                             label="Title"
                             name={[field.name, "title"]}
-                            // fieldKey={[field.fieldKey, "title"]}
                             rules={[{ required: true }]}
                           >
                             <Input />
@@ -303,7 +310,6 @@ export class DetialsCompetitive extends Component<any, any> {
                             {...field}
                             label="File"
                             name={[field.name, "fileName"]}
-                            // fieldKey={[field.fieldKey, "fileName"]}
                           >
                             <span className="upload-file-01">
                               File Choose...
@@ -318,6 +324,7 @@ export class DetialsCompetitive extends Component<any, any> {
                             </span>
                           </Form.Item>
                         </Col>
+                        {fields.length > 1 ? (
                         <Col className="gutter-row" span={3}>
                           <label>&nbsp;&nbsp;</label>
                           <Button
@@ -327,7 +334,7 @@ export class DetialsCompetitive extends Component<any, any> {
                           >
                             <MinusOutlined />
                           </Button>
-                        </Col>
+                        </Col>):""}
                       </Row>
                     </div>
                   </div>
@@ -543,80 +550,6 @@ export class DetialsCompetitive extends Component<any, any> {
                   </Col>
                 </Row>
               </div>
-              {/* <div className="site-page-header-ghost-wrapper">
-                    <Row gutter={16}>
-                      <Col
-                        xs={{ span: 24 }}
-                        sm={{ span: 24 }}
-                        md={{ span: 12 }}
-                        lg={{ span: 12 }}
-                      >
-                        <PageHeader ghost={false} title="Agency Information">
-                          <Descriptions size="small" column={1}>
-                            {this.state.competitiveData.agency !== undefined
-                              ? Object.keys(
-                                  this.state.competitiveData.agency
-                                ).map((key: any) => {
-                                  if (
-                                    typeof this.state.competitiveData.agency[
-                                      key
-                                    ] === "object"
-                                  ) {
-                                    return Object.keys(
-                                      this.state.competitiveData.agency[key]
-                                    ).map((k) => (
-                                      <>
-                                        <Descriptions.Item
-                                          label={
-                                            k.charAt(0).toUpperCase() +
-                                            k.slice(1)
-                                          }
-                                        >
-                                          {
-                                            this.state.competitiveData.agency[
-                                              key
-                                            ][k]
-                                          }
-                                        </Descriptions.Item>
-
-                                        {}
-                                      </>
-                                    ));
-                                  } else {
-                                    return (
-                                      <Descriptions.Item
-                                        label={
-                                          key.charAt(0).toUpperCase() +
-                                          key.slice(1)
-                                        }
-                                      >
-                                        {this.state.competitiveData.agency[key]}
-                                      </Descriptions.Item>
-                                    );
-                                  }
-                                })
-                              : ""}
-                          </Descriptions>
-                        </PageHeader>
-                      </Col>
-                      <Col
-                        xs={{ span: 24 }}
-                        sm={{ span: 24 }}
-                        md={{ span: 12 }}
-                        lg={{ span: 12 }}
-                      >
-                        <PageHeader
-                          ghost={false}
-                          title="Document"
-                          className="bordernone"
-                        ></PageHeader>
-                        <Table
-                          columns={columnsDocument}
-                          dataSource={this.state.competitiveDocumentData}
-                        />
-                      </Col>
-                    </Row>
-                  </div> */}
             </div>
           </Col>
         </Row>

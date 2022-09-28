@@ -9,15 +9,13 @@ import {
   PageHeader,
   Select,
   Form,
-  Table,
   Spin,
 } from "antd";
 import { Table1 } from "../../component/table";
 import { Link } from "react-router-dom";
 import {
   PlusCircleOutlined,
-  LeftOutlined,
-  DeleteFilled,
+  LeftOutlined
 } from "@ant-design/icons";
 import { connect } from "react-redux";
 import { proposalsAction, resetFilterAction } from "../../_redux/_actions";
@@ -27,9 +25,7 @@ import Moment from "moment";
 import { Attribute, RfpTarget } from "../../_models";
 import { AttributeType } from "../../_redux/_constants/AttributeType.constants";
 import { notifications } from "../../_helpers/notifications";
-import { userService } from "../../services/user-service";
 import { MessageProp } from "../../_globals/constants/message.constants";
-import history from "../../_helpers/history";
 const { TextArea } = Input;
 const Option = Select.Option;
 const d: Date = new Date();
@@ -413,7 +409,11 @@ class Report extends Component<any, any> {
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -448,7 +448,11 @@ class Report extends Component<any, any> {
       analytical: await rfpService
         .getAnalytical(this.month, this.year)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loadingReport: false,
     });
   };
@@ -459,7 +463,11 @@ class Report extends Component<any, any> {
       rfpTarget: await rfpService
         .getRfpTarget(this.month, this.year)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loadingfTarget: false,
     });
   };
@@ -791,7 +799,6 @@ class Report extends Component<any, any> {
   };
 
   render() {
-    const { yearList } = this.state;
     return (
       <>
         <style>
@@ -987,4 +994,3 @@ const actionCreators = {
   filterAction: resetFilterAction,
 };
 export default connect(mapState, actionCreators)(Report);
-// export default Report;

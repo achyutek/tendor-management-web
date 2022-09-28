@@ -107,6 +107,8 @@ export const rfpService = {
   getStates,
   getCities,
   getZipCodes,
+  getDocumentStartDate,
+  getDocumentEndDate,
 };
 function getRfpMetricsByAttribute(type: string, interval: number) {
   let url =
@@ -1203,4 +1205,14 @@ function getCities(country: string, state: string) {
 function getZipCodes(country: string, state: string, city: string) {
   let url = baseService.locationServiceEndPoint() + "/location/country/" + country + "/state/" + state + "/city/" + city;
   return service.fetchData(url,"GET",true,{});
+}
+
+function getDocumentStartDate(type: string, interval: string){
+  let url = baseService.documentServiceEndPoint()+ "/startDate/type/"+type+ "/interval/" + interval;
+  return service.fetchData(url,"GET",true,{})
+}
+
+function getDocumentEndDate(type: string, interval: string){
+  let url = baseService.documentServiceEndPoint()+"/endDate/type/"+type+ "/interval/" + interval;
+  return service.fetchData(url,"GET",true,{})
 }

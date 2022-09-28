@@ -1,23 +1,16 @@
 import React, { Component } from "react";
 import "antd/dist/antd.css";
 import {
-  Table,
   Input,
   Button,
   Row,
   Col,
-  PageHeader,
   Select,
-  List,
   Modal,
-  Tooltip,
 } from "antd";
 import { Link } from "react-router-dom";
 import {
   PlusCircleOutlined,
-  GlobalOutlined,
-  PhoneOutlined,
-  CaretDownOutlined,
   DeleteFilled,
 } from "@ant-design/icons";
 
@@ -33,7 +26,6 @@ import { AttributeType } from "../../../_redux/_constants";
 const { Option } = Select;
 const { Search } = Input;
 export class ViewCompetitive extends Component<any, any> {
-  // domain: string = "";
   regionValue: string = "";
   domainValue: string = "";
   currentPage = 1;
@@ -137,7 +129,6 @@ export class ViewCompetitive extends Component<any, any> {
 
   start = () => {
     this.setState({ loading: true });
-    // ajax request after empty completing
     setTimeout(() => {
       this.setState({
         selectedRowKeys: [],
@@ -150,19 +141,10 @@ export class ViewCompetitive extends Component<any, any> {
     this.setState({ visible: false });
   };
 
-  redirectToProposals = (id: any) => {
-    // history.push("/viewproposal?id"+id )
-  };
-
-  onSelectChange = (selectedRowKeys: any) => {
-    this.setState({ selectedRowKeys });
-  };
-
   componentDidMount() {
     document.title = "Competitive";
     this.regionValue ="US";
     this.domainValue = "Staffing";
-    // this.props.getRfpByDomain();
     this.getRegion();
     this.getCompetitive();
     this.handlRegionChange(this.regionValue);
@@ -170,7 +152,11 @@ export class ViewCompetitive extends Component<any, any> {
 
   getRegion = async () => {
     this.setState({
-      region: await rfpService.getRfpByAttribute(AttributeType.REGION).then().catch(notifications.openErrorNotification),
+      region: await rfpService.getRfpByAttribute(AttributeType.REGION).then().catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      }),
       loading: false,
     });
   };
@@ -211,7 +197,11 @@ export class ViewCompetitive extends Component<any, any> {
     this.setState({
       comppetitive: await rfpService
         .getCompetitive(this.regionValue, "Staffing")
-        .then().catch(notifications.openErrorNotification),
+        .then().catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -248,7 +238,11 @@ export class ViewCompetitive extends Component<any, any> {
 
   handlRegionChange = async (region: any) => {
       this.regionValue = region;
-      let response = await rfpService.getDomain(region).then().catch();
+      let response = await rfpService.getDomain(region).then().catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
       if (response != "") {
         let domainName = response[0].name;
         this.domainValue = domainName;
@@ -286,12 +280,6 @@ export class ViewCompetitive extends Component<any, any> {
   };
 
   render() {
-    const { loading, selectedRowKeys } = this.state;
-    const { proposalsData } = this.props;
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: this.onSelectChange,
-    };
 
     return (
       <>
@@ -354,27 +342,6 @@ export class ViewCompetitive extends Component<any, any> {
                         })}
                       </Select>
                     </Col>
-                    {/* <Col
-                      xs={{ span: 24 }}
-                      sm={{ span: 24 }}
-                      md={{ span: 24 }}
-                      lg={{ span: 8 }}
-                    >
-                      <Select
-                        value={this.state.interval}
-                        showSearch
-                        className="select-class"
-                        placeholder="Week/Month"
-                        optionFilterProp="children"
-                        onChange={this.handleWeekMonthChange}
-                      >
-                        <Option value="-1">ALL</Option>
-                        <Option value="7">1 Week</Option>
-                        <Option value="14">2 Weeks</Option>
-                        <Option value="21">3 Weeks</Option>
-                        <Option value="30">1 Month</Option>
-                      </Select>
-                    </Col> */}
                     <Col
                       xs={{ span: 24 }}
                       sm={{ span: 24 }}
@@ -426,9 +393,6 @@ export class ViewCompetitive extends Component<any, any> {
             <Table1
               data={this.state.comppetitive}
               columns={this.columns}
-              //   handlePageChange={this.handlePageChange}
-              //   currentPage={this.currentPage}
-              //   totalPages={this.props.proposalsPagesData}
               loading={this.state.loading}
               handleSelect={this.handleSelect}
               checkBox={true}
@@ -450,5 +414,3 @@ const actionCreators = {
   getRfpByDomain: proposalsAction.getRfpByDomain,
 };
 export default connect(mapState, actionCreators)(ViewCompetitive);
-
-// export default ViewCompetitive;

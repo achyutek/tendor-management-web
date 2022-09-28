@@ -1,4 +1,3 @@
-import { wait } from "@testing-library/react";
 import {
   Button,
   Col,
@@ -18,12 +17,9 @@ import { AttributeType } from "../../_redux/_constants";
 import addButton from "../../../assets/images/addButton.png";
 import { DeleteFilled } from "@ant-design/icons";
 import DailogComponent from "../../component/DailogComponent";
-import { async } from "q";
 import { Attribute } from "../../_models/attribute.model";
 import { notifications } from "../../_helpers/notifications";
 import { MessageProp } from "../../_globals/constants/message.constants";
-import { Link } from "react-router-dom";
-import { threadId } from "worker_threads";
 const Option = Select.Option;
 const { TabPane } = Tabs;
 const columns = [
@@ -80,14 +76,22 @@ export class AdminPage extends Component<any, any> {
     this.getSource();
     this.getConteractType();
     this.getSubmission();
-    let response = await rfpService.getDomain(this.region).then().catch();
+    let response = await rfpService.getDomain(this.region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     this.setState({
       domain: response,
     });
     let responseSubDomain = await rfpService
       .getSubDomains(this.domain)
       .then()
-      .catch();
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
     this.setState({
       subdomain: responseSubDomain,
     });
@@ -130,7 +134,11 @@ export class AdminPage extends Component<any, any> {
 
   handledomainChange = async (domain: any) => {
     this.domain = domain;
-    let response = await rfpService.getSubDomains(domain).then().catch();
+    let response = await rfpService.getSubDomains(domain).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     this.setState({
       subdomain: response,
       loading: false,
@@ -139,7 +147,11 @@ export class AdminPage extends Component<any, any> {
 
   handlRegionChange = async (region: any) => {
     this.region = region;
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     this.setState({
       domain: response,
       loading: false,
@@ -157,7 +169,11 @@ export class AdminPage extends Component<any, any> {
 
   handlRegionChangeWithDomain = async (region: any) => {
     this.region = region;
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     this.setState({
       domain: response,
       loading: false,
@@ -355,7 +371,11 @@ export class AdminPage extends Component<any, any> {
         this.setState({ loading: false });
         this.closeModal();
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   handleSelect = (RwoId: any) => {
@@ -406,7 +426,11 @@ export class AdminPage extends Component<any, any> {
           }
           this.setState({ loading: false });
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     });
   };
 

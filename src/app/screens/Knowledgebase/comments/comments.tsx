@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Table, Input, Button, Row, Col, PageHeader, Select, Form } from "antd";
+import { Input,  Row, Col, Select } from "antd";
 import { Table1 } from "../../../component/table";
 import { rfpService } from "../../../services/rfp-service";
 import { connect } from "react-redux";
@@ -158,7 +158,11 @@ class Comments extends Component<any, any> {
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };

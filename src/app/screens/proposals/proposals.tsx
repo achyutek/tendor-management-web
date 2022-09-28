@@ -2,30 +2,23 @@ import React, { Component } from "react";
 import "antd/dist/antd.css";
 
 import {
-  Table,
   Input,
   Button,
   Row,
   Col,
-  Form,
   Select,
   Modal,
-  List,
-  notification,
   Tooltip,
   Pagination,
 } from "antd";
 import { Link } from "react-router-dom";
 import {
   PlusCircleOutlined,
-  GlobalOutlined,
-  PhoneOutlined,
   ReconciliationOutlined,
   FileAddOutlined,
   HomeOutlined,
   DeleteFilled,
 } from "@ant-design/icons";
-import moment from "moment";
 import { connect } from "react-redux";
 import { filterAction, proposalsAction } from "../../_redux/_actions";
 import { Table1 } from "../../component/table";
@@ -35,12 +28,8 @@ import computer from "../../../assets/images/computer.png";
 import phone from "../../../assets/images/phone.png";
 import globe from "../../../assets/images/globe.png";
 import { notifications } from "../../_helpers/notifications";
-import ArrowLeft from "../../../assets/images/arrow-left.png";
-import ArrowRight from "../../../assets/images/arrow-right.png";
 import { MessageProp } from "../../_globals/constants/message.constants";
-import history from "../../_helpers/history";
 import { AttributeType } from "../../_redux/_constants";
-import { filterReducer } from "../../_redux/_reducers/filter.reducer";
 const { Option } = Select;
 const { Search } = Input;
 const qs = require("query-string");
@@ -58,6 +47,7 @@ export class Proposals extends Component<any, any> {
   submissionValue: string = "All";
   contractValue: string = "All";
   statusValue: string = "All";
+  actionSetDropValue: string = "";
   get columns() {
     return [
       {
@@ -163,8 +153,8 @@ export class Proposals extends Component<any, any> {
         dataIndex: "status",
       },
       {
-        title: "Complexity",
-        dataIndex: "complexity",
+        title: "Assigned To",
+        dataIndex: "ownerName",
       },
       {
         title: "Contact",
@@ -224,7 +214,7 @@ export class Proposals extends Component<any, any> {
   }
 
   state = {
-    selectedRowKeys: [], // Check here to configure the default column
+    selectedRowKeys: [],
     loading: true,
     visible: false,
     title: "",
@@ -273,7 +263,6 @@ export class Proposals extends Component<any, any> {
 
   start = () => {
     this.setState({ loading: true });
-    // ajax request after empty completing
     setTimeout(() => {
       this.setState({
         selectedRowKeys: [],
@@ -467,14 +456,6 @@ export class Proposals extends Component<any, any> {
     this.setState({ visible: false });
   };
 
-  redirectToProposals = (id: any) => {
-    // history.push("/viewproposal?id"+id )
-  };
-
-  onSelectChange = (selectedRowKeys: any) => {
-    this.setState({ selectedRowKeys });
-  };
-
   async componentDidMount() {
     let {
       month,
@@ -492,7 +473,6 @@ export class Proposals extends Component<any, any> {
     } = this.Pars;
 
     const { filterReducer } = this.props;
-    // if (status === "" || type === "" || domain === "" || action === "" || submissionType === "" || future ==="" || context === "") {
     if (
       filterReducer.context === "created" &&
       filterReducer.interval === "-1" &&
@@ -516,16 +496,15 @@ export class Proposals extends Component<any, any> {
       this.statusValue = filterReducer.status;
       this.contractValue = filterReducer.contractType;
       this.submissionValue = filterReducer.submissionType;
+      this.actionSetDropValue = action;
       this.actionValue = filterReducer.action;
       this.regionValue = filterReducer.region;
       this.currentPage = filterReducer.pageNumber;
-      // if(this.state.context !== "due") {
       this.getRfpProposolsPagesByAll(
         filterReducer.context,
         filterReducer.interval
       );
       this.getRfpProposolsByAll(filterReducer.context, filterReducer.interval);
-      // }
     }
     document.title = "Proposals";
     this.loadRefData();
@@ -545,10 +524,10 @@ export class Proposals extends Component<any, any> {
       filterReducer.pageNumber === 1 &&
       filterReducer.past === -1
     ) {
-      // if (status === "" || type === "" || domain === "" || action === "" || submissionType === "" || future ==="" || context === "") {
       status = status ? status : "all";
       type = type ? type : "all";
       domain = domain ? domain : "all";
+      this.actionSetDropValue = action;
       action = action ? action : "all";
       submissionType = submissionType ? submissionType : "all";
       past = past ? past : -1;
@@ -580,13 +559,6 @@ export class Proposals extends Component<any, any> {
     }
     if (blockStatus && query != undefined) {
       if (status != "all" && status === "Submitted") {
-        // await this.getProposalRequestsForReportByStatusPages(
-        //   "due",
-        //   region,
-        //   domain,
-        //   status,
-        //   query
-        // );
         await this.getProposalRequestsForReportByStatus(
           "due",
           region,
@@ -688,10 +660,6 @@ export class Proposals extends Component<any, any> {
         });
       }
     }
-    if (this.state.context === "due") {
-      // await this.getRfpProposolsPages(this.state.context, future);
-      // await this.getRfpProposols(this.state.context, future);
-    }
     this.filterData();
   }
 
@@ -700,7 +668,11 @@ export class Proposals extends Component<any, any> {
       regions: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -733,6 +705,7 @@ export class Proposals extends Component<any, any> {
     if (this.props.rfpByActionData) this.props.getRfpByAction();
     if (this.props.rfpBySubmissionData) this.props.getRFPBYSubmission();
   };
+
   getRfpProposols = async (attribute: string, interval: any) => {
     this.setState({ loading: true });
     if (attribute == "due") {
@@ -741,7 +714,6 @@ export class Proposals extends Component<any, any> {
       } else {
         statusdata = [this.statusValue];
       }
-
       this.setState({
         proposalsData: await rfpService
           .getRfpProposalsByAll(
@@ -758,7 +730,11 @@ export class Proposals extends Component<any, any> {
             this.currentPage
           )
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     } else {
@@ -778,7 +754,11 @@ export class Proposals extends Component<any, any> {
             this.currentPage
           )
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     }
@@ -848,7 +828,11 @@ export class Proposals extends Component<any, any> {
           this.currentPage
         )
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
 
       loading: false,
     });
@@ -871,8 +855,11 @@ export class Proposals extends Component<any, any> {
           query
         )
         .then()
-        .catch(notifications.openErrorNotification),
-
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -899,7 +886,11 @@ export class Proposals extends Component<any, any> {
             "All"
           )
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     } else {
@@ -918,7 +909,11 @@ export class Proposals extends Component<any, any> {
             "All"
           )
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     }
@@ -946,7 +941,11 @@ export class Proposals extends Component<any, any> {
             "All"
           )
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
 
         loading: false,
       });
@@ -966,8 +965,11 @@ export class Proposals extends Component<any, any> {
             "All"
           )
           .then()
-          .catch(notifications.openErrorNotification),
-
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     }
@@ -997,8 +999,11 @@ export class Proposals extends Component<any, any> {
             this.currentPage
           )
           .then()
-          .catch(notifications.openErrorNotification),
-
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     } else {
@@ -1018,14 +1023,16 @@ export class Proposals extends Component<any, any> {
             this.currentPage
           )
           .then()
-          .catch(notifications.openErrorNotification),
-
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       });
     }
   };
   handlePageChange = async (pageNumber: any) => {
-    // this.callData(pageNumber);
     this.setState({
       doFilter: true,
     });
@@ -1068,10 +1075,6 @@ export class Proposals extends Component<any, any> {
       default:
         break;
     }
-    //    notification[type]({
-    //     message: title,
-    //     description: msg,
-    // });
   };
 
   displaySuccessDialog = (msg: any) => {
@@ -1120,7 +1123,11 @@ export class Proposals extends Component<any, any> {
           MessageProp.getDeletedSucessMessage("Proposal")
         );
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   setAccess() {
@@ -1213,7 +1220,11 @@ export class Proposals extends Component<any, any> {
       let response = await rfpService
         .searchProposalCreated(val.trim(), inte)
         .then()
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
       this.setState({
         serachTable: true,
         proposalsData: response,
@@ -1232,7 +1243,11 @@ export class Proposals extends Component<any, any> {
       let response = await rfpService
         .searchProposaldue(val.trim(), inte)
         .then()
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
       this.setState({
         proposalsData: response,
       });
@@ -1336,7 +1351,12 @@ export class Proposals extends Component<any, any> {
 
   filterActions = async (action: string, pageNumber: number) => {
     this.setState({ loading: true });
-    this.actionValue = action;
+    if(action === ""){
+      this.actionValue = this.actionSetDropValue;
+    }else{
+      this.actionValue = action;
+    }
+    
     this.setState({ action: action, subContext: "action" });
     this.currentPage = pageNumber;
     await this.doFilter();
@@ -1402,7 +1422,11 @@ export class Proposals extends Component<any, any> {
             "Successfully send the proposal follow up request"
           );
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
     } else {
       notifications.openErrorNotification(
         "Please Select Any Submitted Proposal."
@@ -1414,25 +1438,17 @@ export class Proposals extends Component<any, any> {
   };
 
   handlRegionChanges = async (region: any) => {
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region);
     this.setState({
       domains: this.getFields(response, "name"),
     });
   };
 
   render() {
-    const { loading, selectedRowKeys } = this.state;
-    const { proposalsData } = this.props;
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: this.onSelectChange,
-    };
-    const hasSelected = selectedRowKeys.length > 0;
     let rfpByDomain = this.state.domains;
     if (rfpByDomain != undefined) {
       rfpByDomain = rfpByDomain.filter((x: any) => x.name != "ALL");
     }
-
     return (
       <>
         <DailogComponent
@@ -1729,8 +1745,6 @@ export class Proposals extends Component<any, any> {
                     </Select>
                   )}
                 </Col>
-                {/* </Row> */}
-                {/* </Col> */}
               </Row>
             </div>
           </Col>
@@ -1772,7 +1786,6 @@ export class Proposals extends Component<any, any> {
                 totalPages={this.state.proposalsDataPages}
                 loading={this.state.loading}
                 handleSelect={this.handleSelect}
-                // handleDelete={this.handleDeleteButton}
                 checkBox={true}
                 enableDelete={false}
               />
@@ -1787,7 +1800,6 @@ export class Proposals extends Component<any, any> {
 function mapState(state: any) {
   const {
     getProposalsByDomain,
-    getRfpByDomain,
     getRfpByStatus,
     getRfpByType,
     getRfpByContract,

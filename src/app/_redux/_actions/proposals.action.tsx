@@ -15,7 +15,6 @@ export const proposalsAction = {
   getRfpBySubmission,
   getRfpBySource,
   getRfpByOwner,
-  // getRfpByCountry,
 };
 
 function getRfpProposals(interval: number, pageNumber: number) {
@@ -26,9 +25,11 @@ function getRfpProposals(interval: number, pageNumber: number) {
         dispatch(success(proposalsData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
         notifications.openErrorNotification(error.toString());
+        }
       }
     );
   };
@@ -58,9 +59,11 @@ function getRfpProposalsPages(interval: number) {
         dispatch(success(proposalsPagesData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
         notifications.openErrorNotification(error.toString());
+        }
       }
     );
   };
@@ -90,8 +93,10 @@ function getRfpProposalsByDomain(interval: number, domain: string) {
         dispatch(success(proposalsByDomainData));
       },
       (error) => {
-        dispatch(failure(error.toString()));
-        dispatch(alertActions.error(error.toString()));
+        if(error !== "Forbidden") {
+          dispatch(failure(error.toString()));
+          dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -121,8 +126,10 @@ function getRfpByDomain() {
         dispatch(success(rfpByDomainData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -151,8 +158,10 @@ function getRfpByStatus() {
         dispatch(success(rfpByStatusData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -181,8 +190,10 @@ function getRfpByType() {
         dispatch(success(rfpByTypeData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -211,8 +222,10 @@ function getRfpByContract() {
         dispatch(success(rfpByContractData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -241,8 +254,10 @@ function getRfpByAction() {
         dispatch(success(rfpByActionData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -271,8 +286,10 @@ function getRfpBySubmission() {
         dispatch(success(rfpBySubmissionData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
+        }
       }
     );
   };
@@ -301,9 +318,11 @@ function getRfpBySource() {
         dispatch(success(rfpBySourceData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         dispatch(alertActions.error(error.toString()));
         notifications.openErrorNotification(error.toString());
+        }
       }
     );
   };
@@ -332,8 +351,10 @@ function getRfpByOwner() {
         dispatch(success(rfpByOwnerData));
       },
       (error) => {
+        if(error !== "Forbidden") {
         dispatch(failure(error.toString()));
         notifications.openErrorNotification(error.toString());
+        }
       }
     );
   };
@@ -353,33 +374,3 @@ function getRfpByOwner() {
     return { type: proposalsConstants.GETRFPBYOWNER_FAILURE, error };
   }
 }
-
-// function getRfpByCountry() {
-//   return (dispatch: any) => {
-//     dispatch(request());
-//     rfpService.getRfpProposalsByCountry().then(
-//       (rfpByCountryrData) => {
-//         dispatch(success(rfpByCountryrData));
-//       },
-//       (error) => {
-//         dispatch(failure(error.toString()));
-//         dispatch(alertActions.error(error.toString()));
-//       }
-//     );
-//   };
-
-//   function request() {
-//     return {
-//       type: proposalsConstants.GETRFPBYCOUNTRY_REQUEST,
-//     };
-//   }
-//   function success(rfpByCountryrData: any) {
-//     return {
-//       type: proposalsConstants.GETRFPBYCOUNTRY_SUCCESS,
-//       rfpByCountryrData,
-//     };
-//   }
-//   function failure(error: string) {
-//     return { type: proposalsConstants.GETRFPBYCOUNTRY_FAILURE, error };
-//   }
-// }

@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import {
   Input,
-  message,
   Row,
   Col,
   Select,
@@ -54,11 +53,7 @@ export class AddUser extends Component<any, any> {
     await this.getAccount();
     await this.getRoles();
     this.setState({ app: "RFP" });
-    if (id === undefined || id === "") {
-      // let app = new App();
-      // app.app = "RFP";
-      // this.state.user.appAccess.push(app);
-    } else {
+    if (id !== undefined || id !== "") {
       await this.getUserById();
       this.setState({
         readOnly: true,
@@ -73,15 +68,14 @@ export class AddUser extends Component<any, any> {
         userEditData: await userService
           .getUserById(id)
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       },
       () => {
-        let role = new Role();
-        // role.name = this.state.userEditData.role;
-        // this.state.user.appAccess.map((data:any)=>{
-        //  data.role = role;
-        // })
         this.editUser();
       }
     );
@@ -116,7 +110,11 @@ export class AddUser extends Component<any, any> {
       roles: await userService
         .getRoleUser()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -126,7 +124,11 @@ export class AddUser extends Component<any, any> {
       accountName: await userService
         .getLoggedInUserAccount()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -205,10 +207,6 @@ export class AddUser extends Component<any, any> {
     });
     for (let role of this.state.roles) {
       if (role.name === event) {
-        // if (
-        //   this.state.user.appAccess != undefined &&
-        //   this.state.user.appAccess.length > 0
-        // ) {
         this.state.user.appAccess = this.state.user.appAccess.filter(
           (app: any) => app.name !== "RFP"
         );
@@ -219,9 +217,6 @@ export class AddUser extends Component<any, any> {
         this.setState({
           user: { ...this.state.user, currentApp },
         });
-        // } else {
-        //   this.state.user.appAccess[0].role = role;
-        // }
       }
     }
   };
@@ -302,7 +297,6 @@ export class AddUser extends Component<any, any> {
                                 label={"Contact Number"}
                                 name={["user", "contactNo"]}
                               >
-                                {/* <Input placeholder="Enter Solicitation Number" /> */}
                                 <InputMask mask="(999) 999-9999">
                                   {(inputProps: any) => (
                                     <Input
@@ -321,7 +315,6 @@ export class AddUser extends Component<any, any> {
                                 rules={[{ required: true }]}
                               >
                                 <Select
-                                  // value={this.state.roles}
                                   onChange={this.roleChange}
                                   placeholder="Select Role"
                                 >

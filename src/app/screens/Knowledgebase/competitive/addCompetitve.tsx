@@ -3,7 +3,6 @@ import "antd/dist/antd.css";
 import InputMask from "react-input-mask";
 import {
   Steps,
-  message,
   Button,
   Row,
   Col,
@@ -11,25 +10,19 @@ import {
   Select,
   Form,
   Input,
-  DatePicker,
   InputNumber,
-  Table,
   Modal,
   Tooltip,
 } from "antd";
 import {
   RightOutlined,
   LeftOutlined,
-  MergeCellsOutlined,
-  PlusCircleOutlined,
   PlusOutlined,
   MinusOutlined,
   DeleteFilled,
 } from "@ant-design/icons";
 import { connect } from "react-redux";
 import { notifications } from "../../../_helpers/notifications";
-import { MaskedInput } from "antd-mask-input";
-import { request } from "http";
 import { rfpService } from "../../../services/rfp-service";
 import { AttributeType } from "../../../_redux/_constants";
 import { proposalsAction } from "../../../_redux/_actions";
@@ -168,17 +161,9 @@ class AddCompetitive extends Component<any, any> {
     {
       title: "Agency Information",
       content: "",
-    },
-    // {
-    //   title: "Documents",
-    //   content: "",
-    // },
-    // {
-    //   title: "Comments",
-    //   content: "",
-    // },
+    }
   ];
-  next = (competitive: any) => {};
+  
   prev() {
     const current = this.state.current - 1;
 
@@ -220,7 +205,11 @@ class AddCompetitive extends Component<any, any> {
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -270,9 +259,17 @@ class AddCompetitive extends Component<any, any> {
               MessageProp.getDeletedSucessMessage("Document")
             );
           })
-          .catch(notifications.openErrorNotification);
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   getDocument = () => {
@@ -284,7 +281,11 @@ class AddCompetitive extends Component<any, any> {
           competitiveDocumentData: response,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   onFinish = (value: any) => {
@@ -363,7 +364,11 @@ class AddCompetitive extends Component<any, any> {
           search: "?id=" + response.id,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   }
 
   cancel = () => {
@@ -382,7 +387,11 @@ class AddCompetitive extends Component<any, any> {
           search: "?id=" + response.id,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   getCompetetiveById = async () => {
@@ -392,7 +401,11 @@ class AddCompetitive extends Component<any, any> {
         ComepetitveEditData: await rfpService
           .getCompetitiveDetails(id)
           .then()
-          .catch(notifications.openErrorNotification),
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          }),
         loading: false,
       },
       () => {
@@ -479,16 +492,28 @@ class AddCompetitive extends Component<any, any> {
                 visible: false,
               });
             })
-            .catch(notifications.openErrorNotification);
+            .catch((error)=>{
+              if(error !== "Forbidden"){
+                notifications.openErrorNotification(error.toString());
+              }
+            });
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     } else {
       notifications.openErrorNotification("Please upload file to submit");
     }
   };
 
   handlRegionChange = async (region: any) => {
-    let response = await rfpService.getDomain(region).then().catch();
+    let response = await rfpService.getDomain(region).then().catch((error)=>{
+      if(error !== "Forbidden"){
+        notifications.openErrorNotification(error.toString());
+      }
+    });
     if (response != "") {
       let domain = response[0].name;
       this.setRegionAndDomain(domain);
@@ -537,7 +562,6 @@ class AddCompetitive extends Component<any, any> {
                             {...field}
                             label="Type"
                             name={[field.name, "type"]}
-                            // fieldKey={[field.fieldKey, "type"]}
                             rules={[{ required: true }]}
                           >
                             <Select value={field.name}>
@@ -553,7 +577,6 @@ class AddCompetitive extends Component<any, any> {
                             {...field}
                             label="Title"
                             name={[field.name, "title"]}
-                            // fieldKey={[field.fieldKey, "title"]}
                             rules={[{ required: true }]}
                           >
                             <Input />
@@ -564,7 +587,6 @@ class AddCompetitive extends Component<any, any> {
                             {...field}
                             label="File"
                             name={[field.name, "fileName"]}
-                            // fieldKey={[field.fieldKey, "fileName"]}
                           >
                             <UploadComponent
                               ownerId={this.state.id}
@@ -608,8 +630,7 @@ class AddCompetitive extends Component<any, any> {
   };
 
   render() {
-    const { current, competitive, subdomainData } = this.state;
-    const { size } = this.state;
+    const { current, competitive } = this.state;
     let { id } = this.Pars;
     return (
       <>
@@ -799,7 +820,6 @@ class AddCompetitive extends Component<any, any> {
                               label={<span> Price</span>}
                               name={["competitive", "price"]}
                             >
-                              {/* <Input placeholder="Enter Price" /> */}
                               <InputNumber
                                 placeholder="Enter Price"
                                 minLength={0}
@@ -891,7 +911,6 @@ class AddCompetitive extends Component<any, any> {
                               label={<span> Agency Contact Number</span>}
                               name={["competitive", "agency", "contactNo"]}
                             >
-                              {/* <Input placeholder="Enter Agency Contact Number" /> */}
                               <InputMask mask="(999) 999-9999">
                                 {(inputProps: any) => (
                                   <Input

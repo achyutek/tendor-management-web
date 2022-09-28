@@ -370,7 +370,7 @@ export class Tasks extends Component<any, any> {
   };
 
   state = {
-    selectedRowKeys: [], // Check here to configure the default column
+    selectedRowKeys: [],
     loading: false,
     proposalsTaskeData: "",
     RfpTaskCount: "",
@@ -707,8 +707,11 @@ export class Tasks extends Component<any, any> {
         this.setState({
           RfpTaskCount: response,
         });
+      },(error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
       })
-      .catch(notifications.openErrorNotification);
 
     rfpService
       .getRfpTaskOpen()
@@ -716,8 +719,11 @@ export class Tasks extends Component<any, any> {
         this.setState({
           RfpTaskOpenCount: response,
         });
+      },(error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
       })
-      .catch(notifications.openErrorNotification);
   };
 
   handlePageChange = async (pageNumber: number) => {
@@ -730,8 +736,7 @@ export class Tasks extends Component<any, any> {
     this.setState({
       proposalsTaskeData: await rfpService
         .getOpenTasks(pageNumber)
-        .then()
-        .catch(notifications.openErrorNotification),
+        .then(),
       loadingOpenTask: false,
     });
   };
@@ -740,8 +745,7 @@ export class Tasks extends Component<any, any> {
     this.setState({
       proposalsMyTaskeData: await rfpService
         .getMyTasks(pageNumber)
-        .then()
-        .catch(notifications.openErrorNotification),
+        .then(),
       loadingMyTask: false,
     });
   };
@@ -756,7 +760,6 @@ export class Tasks extends Component<any, any> {
       let response = await rfpService
         .searchMyTasks(val.trim(), inte)
         .then()
-        .catch(notifications.openErrorNotification);
       this.setState({
         serachTable: true,
         proposalsMyTaskeData: response,
@@ -837,13 +840,11 @@ export class Tasks extends Component<any, any> {
       });
     }
   };
-
   hideModal = () => {
     this.setState({
       openWarningModel: false,
     });
   };
-
   closeModal = () => {
     this.setState({ visible: false });
     this.setState({ setDecisionStatus: false, actionStatus: "" });

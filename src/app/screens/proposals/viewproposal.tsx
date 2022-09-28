@@ -25,19 +25,15 @@ import {
   FormOutlined,
   FileProtectOutlined,
   DoubleLeftOutlined,
-  FileTextOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
-  UploadOutlined,
   MinusOutlined,
   PlusOutlined,
   DeleteFilled,
   AliwangwangOutlined,
   DownloadOutlined,
-  FileAddOutlined,
 } from "@ant-design/icons";
 import { Table1 } from "../../component/table";
-// import { AlloyEditor } from "@types/alloyeditor";
 import { rfpService } from "../../services/rfp-service";
 import PreviewDocument from "../../component/PreviewDocument";
 import DownloadComponent from "../../component/DownloadComponent";
@@ -55,27 +51,20 @@ import { notifications } from "../../_helpers/notifications";
 import moment from "moment";
 import { ProposalRequest, ProposalResponse } from "../../_models";
 import { Comment } from "../../_models/comment.model";
-// Require Editor CSS files.
 import "froala-editor/css/froala_style.min.css";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 import FroalaEditorComponent from "react-froala-wysiwyg";
 import CountriesComponent from "../../component/CountriesComponent";
 
-// Import all Froala Editor plugins;
 import "froala-editor/js/plugins.pkgd.min.js";
 
-// Import a single Froala Editor plugin.
 import "froala-editor/js/plugins/align.min.js";
 
-// Import a language file.
 import "froala-editor/js/languages/de.js";
 
-// Import a third-party plugin.
 import "froala-editor/js/third_party/image_tui.min.js";
 import "froala-editor/js/third_party/embedly.min.js";
 import "froala-editor/js/third_party/spell_checker.min.js";
-
-// ES Modules
 
 import { UserTask } from "../../_models/task.model";
 import history from "../../_helpers/history";
@@ -83,6 +72,7 @@ import { User } from "../../_globals/components";
 import { baseService } from "../../services";
 
 import { SnippetsOutlined } from "@ant-design/icons";
+import JoditEditor from "jodit-react";
 const Option = Select.Option;
 const qs = require("query-string");
 const { TextArea } = Input;
@@ -138,7 +128,13 @@ const columnsAgrementDocument = [
   },
   {
     title: "End Date",
-    dataIndex: "expiryDate"
+    render: (record: any, text: any) => {
+      if(record.expiryDate !== "12/31/9999") {
+        return (
+          record.expiryDate
+         )
+      }
+    }
   },
   {
     title: "Action",
@@ -172,6 +168,7 @@ export class Viewproposal extends Component<any, any> {
   Pars = qs.parse(window.location.search);
   documentsFormRef: any = React.createRef();
   docDis = false;
+  
 
   columnsComment = [
     {
@@ -196,9 +193,8 @@ export class Viewproposal extends Component<any, any> {
                 </a>
               </span>
               &nbsp;&nbsp;
-              {record?.length > 100
-                ? record?.substring(0, 100) + "..."
-                : record}
+              <span dangerouslySetInnerHTML={{ __html: record.length > 100 ? record.substring(0, 100) + "..."
+                : record }} />
             </Tooltip>
           </div>
         );
@@ -293,7 +289,9 @@ export class Viewproposal extends Component<any, any> {
       popupphone: false,
       createdBy: "",
       rfpCreatedBy: "",
-      data:{}
+      wonProposalAgreementStartWorkReminderDays: "",
+      data:{},
+      docDatePicker : true
     };
   }
 
@@ -306,7 +304,7 @@ export class Viewproposal extends Component<any, any> {
   };
 
   copyCodeToClipboard = (record: any) => {
-    let content = record;
+    let content = <span dangerouslySetInnerHTML={{ __html: record }} />;
     this.setState({ visible: true, content, title: "Text" });
   };
 
@@ -337,6 +335,7 @@ export class Viewproposal extends Component<any, any> {
     });
     await this.getProposalRequest(id);
     this.props.getRfpByOwner();
+    // this.wonProposalRemainingDays();
 
   };
 
@@ -359,9 +358,11 @@ export class Viewproposal extends Component<any, any> {
         });
       })
       .catch((error) => {
-        notifications.openErrorNotification(error);
-        this.setState({ loadingForView: false });
-        history.goBack();
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error);
+          this.setState({ loadingForView: false });
+          history.goBack();
+        }
       });
   }
   getCreatedNameBy = async () => {
@@ -419,7 +420,11 @@ export class Viewproposal extends Component<any, any> {
                 loadingForView: false,
               });
             })
-            .catch(notifications.openErrorNotification);
+            .catch((error)=>{
+              if(error !== "Forbidden"){
+                notifications.openErrorNotification(error.toString());
+              }
+            });
           rfpService
             .getResponseContentBySubDomain(
               this.state.proposalsData.region,
@@ -433,7 +438,11 @@ export class Viewproposal extends Component<any, any> {
                 loadingForView: false,
               });
             })
-            .catch(notifications.openErrorNotification);
+            .catch((error)=>{
+              if(error !== "Forbidden"){
+                notifications.openErrorNotification(error.toString());
+              }
+            });
         });
     } else {
       notifications.openWarningNotification("Yor are not start with 0 notify");
@@ -449,6 +458,7 @@ export class Viewproposal extends Component<any, any> {
   };
 
   fileUploadCallback = (response: any, filename: any, index: number) => {
+
     let { id } = this.Pars;
     if (this.state.proposalsData.status === "Won") {
       let document = new DocumentWithDate();
@@ -467,29 +477,30 @@ export class Viewproposal extends Component<any, any> {
 
   onFinishAddDco = (value: any) => {
     this.docDis = true;
-    for (let i = 0; i < this.state.documents.length; i++) {
-      if (value.documents[i] != null && value.documents != undefined) {
-        this.state.documents[i].title = value.documents[i].title;
-        this.state.documents[i].type = value.documents[i].type;
-        if (this.state.proposalsData.status === "Won") {
-          if( value.documents[i].issueDate && value.documents[i].expiryDate ) {
-          let startDate = value.documents[i].issueDate.format(this.format);
-            let endDate = value.documents[i].expiryDate.format(this.format);
-              if (Date.parse(endDate) <= Date.parse(startDate)) {
-                notifications.warningMessage("End date should be greater than Start date for " + value.documents[i].title + "");
-                return true;
+      for (let i = 0; i < this.state.documents.length; i++) {
+          if (value.documents[i] != null && value.documents != undefined) {
+            this.state.documents[i].title = value.documents[i].title;
+            this.state.documents[i].type = value.documents[i].type;
+            if (this.state.proposalsData.status === "Won") {
+              if( value.documents[i].issueDate && value.documents[i].expiryDate ) {
+              let startDate = value.documents[i].issueDate.format(this.format);
+                let endDate = value.documents[i].expiryDate.format(this.format);
+                  if (Date.parse(endDate) <= Date.parse(startDate)) {
+                    notifications.warningMessage("End date should be greater than Start date for " + value.documents[i].title + "");
+                    return true;
+                  }
+                this.state.documents[i].issueDate = startDate;
+                this.state.documents[i].expiryDate = endDate;
+              } else {
+                this.state.documents[i].issueDate = "";
+                this.state.documents[i].expiryDate = "12/31/9999";
               }
-            this.state.documents[i].issueDate = startDate;
-            this.state.documents[i].expiryDate = endDate;
+            }
           } else {
-            this.state.documents[i].issueDate = "";
-            this.state.documents[i].expiryDate = "12/31/9999";
+            this.state.documents[i] = undefined;
           }
-        }
-      } else {
-        this.state.documents[i] = undefined;
       }
-    }
+    
     this.saveDocument();
   };
   getDocumentsByRFP = (id: string) => {
@@ -509,24 +520,38 @@ export class Viewproposal extends Component<any, any> {
       loadingForView: true,
     });
     let documnets = this.state.documents;
-    documnets.map((document: any) => {
-      if (document != undefined && document != null) {
-        rfpService
-          .addDocument(document)
-          .then((response) => {
-            notifications.openSuccessNotification(
-              MessageProp.getAddedSuccessMessage("Documents")
-            );
-
-            this.getDocumentsByRFP(id);
+    if(documnets.length > 0){
+      documnets.map((document: any) => {
+        if (document != undefined && document != null) {
+            rfpService
+            .addDocument(document)
+            .then((response) => {
+              notifications.openSuccessNotification(
+                MessageProp.getAddedSuccessMessage("Documents")
+              );
+              this.getDocumentsByRFP(id);
+              this.setState({
+                loadingForView: false,
+                visible: false,
+              });
+            })
+            .catch((error)=>{
+              if(error !== "Forbidden"){
+                notifications.openErrorNotification(error.toString());
+              }
+            });
+        }
+      });
+    }else{
+      notifications.warningMessage("Please uplaod your file!");
             this.setState({
               loadingForView: false,
-              visible: false,
-            });
-          })
-          .catch(notifications.openErrorNotification);
-      }
-    });
+            })
+            return true;
+    }
+    this.setState({
+      documents : []
+    })
     await this.getDocumentsByRFP(id);
   };
 
@@ -536,6 +561,49 @@ export class Viewproposal extends Component<any, any> {
       return index == idx;
     })[0];
   };
+
+  onChangeDocType = (e:any) =>{
+    if(e === "Project Agreement") {
+      this.setState({
+        docDatePicker : false
+      },()=>{
+          this.addDocument();
+      })
+    }else{
+      this.setState({
+        docDatePicker : true
+      },()=>{
+        this.addDocument();
+      })
+    }
+  }
+
+  datePicker =() =>{
+    let field = Array;
+      return <><Col className="gutter-row" span={7}>
+      <Form.Item
+        {...field}
+        label="Start Date"
+        name={[field.name, "issueDate"]}
+      >
+        <DatePicker
+          format={this.format}
+          disabledDate={this.disabledDate}
+        />
+      </Form.Item>
+    </Col>
+      <Col className="gutter-row" span={7}>
+        <Form.Item
+          {...field}
+          label="End Date"
+          name={[field.name, "expiryDate"]}                             >
+          <DatePicker
+            format={this.format}
+            disabledDate={this.disabledDate}
+          />
+        </Form.Item>
+      </Col> </>
+  }
 
   addDocument = () => {
     let docx = [{}];
@@ -567,7 +635,7 @@ export class Viewproposal extends Component<any, any> {
                             // fieldKey={[field.fieldKey, "type"]}
                             rules={[{ required: true }]}
                           >
-                            <Select value={field.name}>
+                            <Select value={field.name} onSelect={this.onChangeDocType}>
                               <Option value="Project Info">Project Info</Option>
                               <Option value="Project Proposal">
                                 Project Proposal
@@ -590,7 +658,8 @@ export class Viewproposal extends Component<any, any> {
                             <Input />
                           </Form.Item>
                         </Col>
-                        {this.state.proposalsData ? this.state.proposalsData.status === "Won" ? (<><Col className="gutter-row" span={7}>
+                        {!this.state.docDatePicker ? (this.state.proposalsData ? this.state.proposalsData.status === "Won" ? (<>
+                        <Col className="gutter-row" span={7}>
                           <Form.Item
                             {...field}
                             label="Start Date"
@@ -606,14 +675,14 @@ export class Viewproposal extends Component<any, any> {
                             <Form.Item
                               {...field}
                               label="End Date"
-                              name={[field.name, "expiryDate"]}
-                            >
+                              name={[field.name, "expiryDate"]}                             >
                               <DatePicker
                                 format={this.format}
                                 disabledDate={this.disabledDate}
                               />
                             </Form.Item>
-                          </Col></>) : ('') : ''}
+                          </Col></>) : ('') : ''):('') }
+                        
 
                         <Col className="gutter-row" span={7}>
                           <Form.Item
@@ -630,7 +699,7 @@ export class Viewproposal extends Component<any, any> {
                             ></UploadComponent>
                           </Form.Item>
                         </Col>
-                        <Col className="gutter-row" span={3}>
+                        {fields.length > 1 ? (<Col className="gutter-row" span={3}>
                           <label>&nbsp;&nbsp;</label>
                           <Button
                             type="primary"
@@ -639,7 +708,7 @@ export class Viewproposal extends Component<any, any> {
                           >
                             <MinusOutlined />
                           </Button>
-                        </Col>
+                        </Col>):('')}
                       </Row>
                     </div>
                   </div>
@@ -682,7 +751,7 @@ export class Viewproposal extends Component<any, any> {
           dueDate,
         },
       },
-      () => {}
+      () => { }
     );
 
     let dataArray = [];
@@ -734,7 +803,11 @@ export class Viewproposal extends Component<any, any> {
           await rfpService
             .addDocument(this.state.documentData)
             .then()
-            .catch(notifications.openErrorNotification);
+            .catch((error)=>{
+              if(error !== "Forbidden"){
+                notifications.openErrorNotification(error.toString());
+              }
+            });
         }
         if (comment != "" && comment != undefined)
           await this.updateProposalRequest(comment);
@@ -746,7 +819,11 @@ export class Viewproposal extends Component<any, any> {
           visible: false,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
   async updateProposalRequest(text: string) {
     let comment = new Comment();
@@ -757,13 +834,21 @@ export class Viewproposal extends Component<any, any> {
     let request = await rfpService
       .getProposalRequest(this.state.userTask.businessKey)
       .then()
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
     if (request) {
       request.comments.push(comment);
       await rfpService
         .updateProposalRequest(request)
         .then()
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     }
   }
   ownerNameChange = (event: string) => {
@@ -995,7 +1080,11 @@ export class Viewproposal extends Component<any, any> {
               MessageProp.getExportSucessMessage("Response")
             );
           })
-          .catch(notifications.openErrorNotification);
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       }
     }
     this.setState({
@@ -1023,9 +1112,17 @@ export class Viewproposal extends Component<any, any> {
               visible: false,
             });
           })
-          .catch(notifications.openErrorNotification);
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   }
 
   existingContent = () => {
@@ -1080,8 +1177,12 @@ export class Viewproposal extends Component<any, any> {
         this.state.responseContents.content.push(this.state.responseContent);
         rfpService
           .addProposalResponse(this.state.responseContent)
-          .then((response) => {})
-          .catch(notifications.openErrorNotification);
+          .then((response) => { })
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       }
     );
   };
@@ -1137,7 +1238,11 @@ export class Viewproposal extends Component<any, any> {
           );
           this.getProposalRequest(this.state.request.id);
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     }
   };
 
@@ -1160,7 +1265,11 @@ export class Viewproposal extends Component<any, any> {
           search: "?id=" + response.id,
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   }
   updateLoading = async (bol: boolean) => {
     await this.setState({ loading: bol });
@@ -1177,7 +1286,11 @@ export class Viewproposal extends Component<any, any> {
           scrollToFirstError
         >
           <Form.Item label="Comment" name={["text"]}>
-            <TextArea rows={4} />
+            {/* <TextArea rows={4} /> */}
+            <JoditEditor
+               value={this.state.responseContent.answer}
+              //  onChange={this.handleChange}
+             />
           </Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -1262,9 +1375,17 @@ export class Viewproposal extends Component<any, any> {
               MessageProp.getDeletedSucessMessage("Document")
             );
           })
-          .catch(notifications.openErrorNotification);
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   handleZipFile = () => {
@@ -1296,17 +1417,27 @@ export class Viewproposal extends Component<any, any> {
                 loading: false,
               },
               () => {
+                // if (this.state.blob > 22) {
                 importedSaveAs(this.state.blob, fileName);
-              
+                // } else {
+                //   notifications.openErrorNotification(
+                //     "Can not download zip file.did not find any document."
+                //   );
+                // }
               }
             );
           })
-          .catch(notifications.openErrorNotification);
+          .catch((error)=>{
+            if(error !== "Forbidden"){
+              notifications.openErrorNotification(error.toString());
+            }
+          });
       }
     }
   };
 
   onChnageCancel = () => {
+    // window.location.href = window.location.href;
     history.push("/proposals?past=7");
   };
 
@@ -1332,7 +1463,11 @@ export class Viewproposal extends Component<any, any> {
             loadingForView: false,
           });
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
       rfpService
         .getResponseListContentBySubDomain(
           this.state.proposalsData.region,
@@ -1346,7 +1481,11 @@ export class Viewproposal extends Component<any, any> {
             loadingForView: false,
           });
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     } else if (event === "3") {
       this.setState({
         tabKey: 3,
@@ -1359,7 +1498,11 @@ export class Viewproposal extends Component<any, any> {
             loadingForView: false,
           });
         })
-        .catch(notifications.openErrorNotification);
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        });
     } else if (event === "4") {
       this.setState({
         tabKey: 4,
@@ -1424,7 +1567,11 @@ export class Viewproposal extends Component<any, any> {
           search: "?past=-1",
         });
       })
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
   };
 
   newCreateWonProposal = () => {
@@ -1463,6 +1610,16 @@ export class Viewproposal extends Component<any, any> {
     };
     this.refForm.current.setFieldsValue(fieldValues);
   };
+
+  wonProposalRemainingDays =()=>{
+   let now = new Date();
+    const totalDays = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const today = now.getDate();
+    const remainingDays = totalDays - today;
+    this.setState({
+      wonProposalAgreementStartWorkReminderDays: remainingDays
+    })
+  }
 
   editWonProposal = () => {
     this.setState({
@@ -1668,6 +1825,12 @@ export class Viewproposal extends Component<any, any> {
                                   <PlusCircleOutlined />
                                 </Button>
                               </Tooltip>
+                              {/* <Button
+                              className="status-button"
+                              onClick={this.addNewContent}
+                            >
+                              <PlusCircleOutlined />
+                            </Button> */}
                             </div>
                           </>
                         ) : (

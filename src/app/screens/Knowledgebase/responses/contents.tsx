@@ -4,121 +4,26 @@ import { connect } from "react-redux";
 import { proposalsAction } from "../../../_redux/_actions";
 
 import {
-  Steps,
-  message,
   Button,
   Row,
   Col,
   PageHeader,
-  Select,
   Form,
   Input,
   Modal,
-  DatePicker,
-  InputNumber,
   Spin,
 } from "antd";
 import { ResponseContent } from "../../../_models";
 import { rfpService } from "../../../services/rfp-service";
 import { notifications } from "../../../_helpers/notifications";
-import FroalaEditorComponent from "react-froala-wysiwyg";
 import { MessageProp } from "../../../_globals/constants/message.constants";
 import history from "../../../_helpers/history";
 import JoditEditor from "jodit-react";
-import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Editor } from "@tinymce/tinymce-react";
-const { TextArea } = Input;
 const qs = require("query-string");
 
-const modules = {
-  toolbar: {
-    container: "#toolbar",
-    //   handlers: {
-    //     insertHeart: insertHeart
-    //   }
-  },
-};
-
-const formats = [
-  "header",
-  "font",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-  "color",
-];
-
-const CustomToolbar = () => (
-  <div id="toolbar">
-    <span className="ql-formats">
-      <button className="ql-bold"></button>
-      <button className="ql-italic"></button>
-      <button className="ql-underline"></button>
-      <button className="ql-strike"></button>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-blockquote"></button>
-      <button className="ql-code-block"></button>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-header" value="1"></button>
-      <button className="ql-header" value="2"></button>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-list" value="ordered"></button>
-      <button className="ql-list" value="bullet"></button>
-      <select className="ql-align">
-        <option selected></option>
-        <option value="center"></option>
-        <option value="right"></option>
-        <option value="justify"></option>
-      </select>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-script" value="sub"></button>
-      <button className="ql-script" value="super"></button>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-indent" value="-1"></button>
-      <button className="ql-indent" value="+1"></button>
-    </span>
-    <span className="ql-formats">
-      <select className="ql-color"></select>
-      <select className="ql-background"></select>
-    </span>
-    <span className="ql-formats">
-      <button className="ql-direction" value="rtl"></button>
-      <button className="ql-clean"></button>
-      <button className="ql-link"></button>
-      <button className="ql-image"></button>
-    </span>
-    <span className="ql-formats">
-      <select className="ql-size">
-        <option value="small"></option>
-        <option selected></option>
-        <option value="large"></option>
-        <option value="huge"></option>
-      </select>
-      <select className="ql-font">
-        <option selected></option>
-        <option value="serif"></option>
-        <option value="monospace"></option>
-      </select>
-    </span>
-  </div>
-);
-
 const config = {
-  readonly: true, // all options from https://xdsoft.net/jodit/doc/
+  readonly: true
 };
 
 class Contents extends Component<any, any> {
@@ -153,22 +58,25 @@ class Contents extends Component<any, any> {
       oldContent: await rfpService
         .getResponseContentByParentId(id)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
 
     let response = await rfpService
       .getResponseContentById(id)
       .then()
-      .catch(notifications.openErrorNotification);
+      .catch((error)=>{
+        if(error !== "Forbidden"){
+          notifications.openErrorNotification(error.toString());
+        }
+      });
     this.setState(
       {
         newContent: response,
-        //  await rfpService
-        //   .getResponseContentById(id)
-        //   .then()
-        //   .catch(notifications.openErrorNotification),
-
         loading: false,
       },
       () => {
@@ -222,14 +130,9 @@ class Contents extends Component<any, any> {
         audit,
       },
     });
-    // if (this.state.body == undefined || this.state.body == "")
-    //   notifications.openErrorNotification("Answer is required!");
-    // else {
-    //   this.state.newContent.answer = this.state.body;
-    // }
-
     this.addContents();
   };
+
   onReject = () => {
     this.setState({ approveButton: true,rejectButton:true });
     Modal.confirm({
@@ -267,9 +170,6 @@ class Contents extends Component<any, any> {
     });
   };
 
-  // handleContentChange = (event: any) => {
-  //   this.state.newContent.question = event.html;
-  // };
   handleChange = (value: any) => {
     let answer = value;
     this.setState({ newContent: { ...this.state.newContent, answer } });
@@ -321,7 +221,6 @@ class Contents extends Component<any, any> {
                     <Form
                       name="basic"
                       scrollToFirstError
-                      //   validateMessages={validateMessages}
                     >
                       <div className="steps-action">
                         <>
@@ -370,7 +269,6 @@ class Contents extends Component<any, any> {
                   onFinish={this.onFinish}
                   ref={this.refForm}
                   scrollToFirstError
-                  //   validateMessages={validateMessages}
                 >
                   <div className="steps-action">
                     <>
@@ -384,8 +282,6 @@ class Contents extends Component<any, any> {
                         </Form.Item>
                         <Form.Item
                           label="Answer"
-                          // name={["newContent", "answer"]}
-                          // rules={[{ required: true }]}
                         >
                           <JoditEditor
                             value={this.state.newContent.answer}

@@ -5,7 +5,6 @@ import {
   message,
   Row,
   Col,
-  PageHeader,
   Select,
   Form,
   Button,
@@ -97,9 +96,6 @@ export class UsersList extends Component<any, any> {
   }
   async componentDidMount() {
     document.title = "Users";
-    // let app = new App();
-    // app.name = "RFP";
-    // this.state.user.apps.push(app);
     await this.getAccount();
     await this.getUsersList();
     await this.getRole();
@@ -117,7 +113,11 @@ export class UsersList extends Component<any, any> {
       roles: await userService
         .getRoleUser()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -127,7 +127,11 @@ export class UsersList extends Component<any, any> {
       accountName: await userService
         .getLoggedInUserAccount()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -372,7 +376,6 @@ export class UsersList extends Component<any, any> {
 
   handleDeleteButton = () => {
     if (this.state.selectedRow.length === 0) {
-      // alert("Please Select Row");
       notifications.openWarningNotification("Please Select Row");
     } else {
       Modal.confirm({
@@ -430,7 +433,11 @@ export class UsersList extends Component<any, any> {
       users: await userService
         .getUsersByApp()
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
       loading: false,
     });
   };
@@ -505,7 +512,6 @@ export class UsersList extends Component<any, any> {
             </div>
           </Col>
         </Row>
-
         <Row>
           <Col
             xs={{ span: 24 }}

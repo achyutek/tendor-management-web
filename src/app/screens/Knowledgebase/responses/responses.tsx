@@ -5,19 +5,14 @@ import {
   Button,
   Row,
   Col,
-  PageHeader,
   Select,
   Form,
-  message,
   Collapse,
   Modal,
 } from "antd";
 import {
   DeleteFilled,
-  ClockCircleOutlined,
   PlusCircleOutlined,
-  FormOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
 import History from "../../../../assets/img/history.svg";
 import Edit from "../../../../assets/img/edit.svg";
@@ -30,39 +25,26 @@ import { connect } from "react-redux";
 import { proposalsAction } from "../../../_redux/_actions";
 import { notifications } from "../../../_helpers/notifications";
 import { MessageProp } from "../../../_globals/constants/message.constants";
-import GlobalSearchComponent from "../../../component/SearchComponent";
-// Require Editor CSS files.
+
 import "froala-editor/css/froala_style.min.css";
 import "froala-editor/css/froala_editor.pkgd.min.css";
 
 import FroalaEditorComponent from "react-froala-wysiwyg";
 
-// Import all Froala Editor plugins;
 import "froala-editor/js/plugins.pkgd.min.js";
 
-// Import a single Froala Editor plugin.
 import "froala-editor/js/plugins/align.min.js";
 
-// Import a language file.
 import "froala-editor/js/languages/de.js";
 
-// Import a third-party plugin.
 import "froala-editor/js/third_party/image_tui.min.js";
 import "froala-editor/js/third_party/embedly.min.js";
 import "froala-editor/js/third_party/spell_checker.min.js";
 import { AttributeType } from "../../../_redux/_constants";
 
 const Option = Select.Option;
-const { TextArea, Search } = Input;
-const { Panel } = Collapse;
+const { Search } = Input;
 class Responses extends Component<any, any> {
-  text = (
-    <p style={{ paddingLeft: 24 }}>
-      A dog is a type of domesticated animal. Known for its loyalty and
-      faithfulness, it can be found as a welcome guest in many households across
-      the world.
-    </p>
-  );
   pageNo = 1;
   totalPage = 0;
   currentPage = 1;
@@ -169,20 +151,6 @@ class Responses extends Component<any, any> {
     await this.getResponseHistory(record);
     let content = (
       <>
-        {/* <Collapse bordered={false} defaultActiveKey={["1"]}>
-          <Panel
-            header="Quastion"
-            extra={[
-              <Col span={24}>
-                <span>3.0</span>
-              </Col>,
-            ]}
-            key="1"
-          >
-            {this.text}
-          </Panel>
-         
-        </Collapse> */}
         <Table1
           data={this.state.historyData}
           columns={this.columnsHistory}
@@ -268,7 +236,6 @@ class Responses extends Component<any, any> {
                         tag="textarea"
                         model={record.answer}
                       />
-                      {/* <span dangerouslySetInnerHTML={{ __html: record.answer }} /> */}
                     </Form.Item>
                   </Col>
                 </Row>
@@ -329,8 +296,6 @@ class Responses extends Component<any, any> {
       dataIndex: "answer",
       render: (text: any, record: any) => {
         return (
-          // <span dangerouslySetInnerHTML={{ __html: record.answer }}>
-          //   ;
           <span
             onClick={() => {
               this.getAnswer(record);
@@ -338,7 +303,6 @@ class Responses extends Component<any, any> {
           >
             <a className="responses-view">View</a>
           </span>
-          // </span>
         );
       },
     },
@@ -349,7 +313,6 @@ class Responses extends Component<any, any> {
     {
       title: "Status",
       render: (text: any, record: any) => {
-        // {this.state.allowEdit?():('')}
         return record.status !== "Approved" ? (
           <>
             <Link to={"/contents?id=" + record.id} style={{ color: "#13b4ca" }}>
@@ -377,7 +340,6 @@ class Responses extends Component<any, any> {
                   search: "?id=" + record.id,
                   state: { detail: record },
                 }
-                // "/addResponse?id=" + record.id + "&&question=" + record.question
               }
               style={{ color: "#13b4ca" }}
             >
@@ -423,8 +385,6 @@ class Responses extends Component<any, any> {
       dataIndex: "answer",
       render: (text: any, record: any) => {
         return (
-          // <span dangerouslySetInnerHTML={{ __html: record.answer }}>
-          //   ;
           <span
             onClick={() => {
               this.getAnswer(record);
@@ -432,7 +392,6 @@ class Responses extends Component<any, any> {
           >
             <a className="responses-view">View..</a>
           </span>
-          // </span>
         );
       },
     },
@@ -477,8 +436,6 @@ class Responses extends Component<any, any> {
       dataIndex: "answer",
       render: (text: any, record: any) => {
         return (
-          // <span dangerouslySetInnerHTML={{ __html: record.answer }}>
-          //   ;
           <span
             onClick={() => {
               this.getAnswer(record);
@@ -486,7 +443,6 @@ class Responses extends Component<any, any> {
           >
             <a className="responses-view">View..</a>
           </span>
-          // </span>
         );
       },
     },
@@ -510,7 +466,6 @@ class Responses extends Component<any, any> {
                   search: "?id=" + record.id,
                   state: { detail: record },
                 }
-                // "/addResponse?id=" + record.id + "&&question=" + record.question
               }
               style={{ color: "#13b4ca" }}
             >
@@ -521,6 +476,7 @@ class Responses extends Component<any, any> {
       },
     },
   ];
+
   setAccess() {
     const { user } = this.props;
 
@@ -585,11 +541,6 @@ class Responses extends Component<any, any> {
             domainName: domain,
           },
           () => {
-            // let subDoaminName = this.state.subdomainData[0].name;
-            // this.subDomainValue = subDoaminName;
-            // this.setState({
-            //   subDoaminName: subDoaminName,
-            // });
             this.getResponseContentBySubDomain(this.region, domain, "All", -1);
           }
         );
@@ -607,7 +558,6 @@ class Responses extends Component<any, any> {
   };
 
   handelSubDominachnge = (subDomain: string) => {
-    // this.subDomain = subDomain;
     this.setState(
       {
         subDomain,
@@ -660,7 +610,6 @@ class Responses extends Component<any, any> {
           columns={this.columns}
           loading={this.state.loading}
           handlePageChange={this.handlePageChange}
-          // currentPage={this.pageNo}
           handleSelect={this.handleSelect}
           totalPages={this.state.totalPage}
           checkBox={true}
@@ -673,7 +622,6 @@ class Responses extends Component<any, any> {
           columns={this.columnsStatusAction}
           loading={this.state.loading}
           handlePageChange={this.handlePageChange}
-          // currentPage={this.pageNo}
           handleSelect={this.handleSelect}
           totalPages={this.state.totalPage}
           checkBox={true}
@@ -686,7 +634,6 @@ class Responses extends Component<any, any> {
           columns={this.columnsValidate}
           loading={this.state.loading}
           handlePageChange={this.handlePageChange}
-          // currentPage={this.pageNo}
           handleSelect={this.handleSelect}
           totalPages={this.state.totalPage}
           checkBox={true}
@@ -724,7 +671,11 @@ class Responses extends Component<any, any> {
       region: await rfpService
         .getRfpByAttribute(AttributeType.REGION)
         .then()
-        .catch(notifications.openErrorNotification),
+        .catch((error)=>{
+          if(error !== "Forbidden"){
+            notifications.openErrorNotification(error.toString());
+          }
+        }),
     });
   };
 
@@ -745,7 +696,6 @@ class Responses extends Component<any, any> {
       this.domainValue = domainName;
       this.setState({
         domain: this.getFields(response, "name"),
-        // doaminName: domainName,
       });
       this.handledomainChange(domainName);
     } else {
@@ -883,7 +833,6 @@ class Responses extends Component<any, any> {
               <Button
                 className="fr f1 mr-top"
                 type="primary"
-                // onClick={this.addResponse}
                 icon={<PlusCircleOutlined />}
               >
                 Add Responses
@@ -900,25 +849,6 @@ class Responses extends Component<any, any> {
           >
             <div className="site-page-header-ghost-wrapper">
               {this.responseByRole()}
-              {/* {this.state.allowEditContent === true ? ( <Table1
-                data={this.state.responses}
-                columns={this.columns}
-                loading={this.state.loading}
-                handlePageChange={this.handlePageChange}
-                // currentPage={this.pageNo}
-                handleSelect={this.handleSelect}
-                totalPages={this.state.totalPage}
-                checkBox={true}
-              />):( <Table1
-                data={this.state.responses}
-                columns={this.columnsValidate}
-                loading={this.state.loading}
-                handlePageChange={this.handlePageChange}
-                // currentPage={this.pageNo}
-                handleSelect={this.handleSelect}
-                totalPages={this.state.totalPage}
-                checkBox={true}
-              />)} */}
             </div>
           </Col>
         </Row>
@@ -928,7 +858,6 @@ class Responses extends Component<any, any> {
 }
 
 function mapState(state: any) {
-  const { getRfpByDomain } = state;
   const { authentication } = state;
   const { user } = authentication;
   return {
